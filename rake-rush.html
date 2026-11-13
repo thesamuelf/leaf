@@ -149,6 +149,8 @@
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+      .leaf { animation: leaf-fall var(--fall-duration) linear forwards !important; }
+      .bucket-drop { animation: leaf-fall var(--fall-duration) linear forwards !important; }
     }
   </style>
 </head>
@@ -219,7 +221,7 @@
       <ol class="leaderboard-list" id="leaderboardList"></ol>
     </section>
 
-    <footer class="footer"><span>20261113.1558</span><span>Show up. Rake up. Roll out.</span></footer>
+    <footer class="footer"><span>20261113.1638</span><span>Show up. Rake up. Roll out.</span></footer>
   </main>
 
   <script>
@@ -261,7 +263,8 @@ randomExtraSeconds: 0.45 adds some variation to each leaf’s fall time.
         fasterPerRound: 0.28,
         maximumSpeedRounds: 12,
         minimumSeconds: 1.15,
-        randomExtraSeconds: 0.45
+        randomExtraSeconds: 0.45,
+        horizontalPaddingPixels: 14
       },
       leafSpawn: {
         baseIntervalMs: 1250,
@@ -274,7 +277,8 @@ randomExtraSeconds: 0.45 adds some variation to each leaf’s fall time.
         repeatEveryRounds: 3,
         cooldownFullRounds: 3,
         dropFallSeconds: 5.2,
-        swipeCatchRadius: 38
+        swipeCatchRadius: 38,
+        horizontalPaddingPixels: 14
       },
       audio: {
         normalBaseFrequency: 480,
@@ -471,7 +475,9 @@ randomExtraSeconds: 0.45 adds some variation to each leaf’s fall time.
 
     function playTone(frequency, duration = 0.08, shape = "sine") {
       if (!soundEnabled) return;
-      audioContext ||= new AudioContext();
+      const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+      if (!audioContext && AudioContextConstructor) audioContext = new AudioContextConstructor();
+      if (!audioContext) return;
       const oscillator = audioContext.createOscillator();
       const gain = audioContext.createGain();
       oscillator.type = shape;
@@ -544,7 +550,7 @@ randomExtraSeconds: 0.45 adds some variation to each leaf’s fall time.
       previousSwipePoint = null;
       bucketAvailableRound = round + GAME_CONFIG.bucket.cooldownFullRounds + 1;
       field.classList.remove("bucket-equipped");
-      bucketCursor?.remove();
+      if (bucketCursor) bucketCursor.remove();
       bucketCursor = null;
       return true;
     }
@@ -555,10 +561,14 @@ randomExtraSeconds: 0.45 adds some variation to each leaf’s fall time.
       bucketAvailableRound = round + GAME_CONFIG.bucket.repeatEveryRounds;
       bucket.type = "button";
       bucket.className = "bucket-drop";
-      bucket.textContent = "🪣";
+      bucket.textContent = "🪣"; // "🧹" 
       bucket.setAttribute("aria-label", "Falling bucket. Tap to pick up, then swipe to catch leaves.");
       bucket.title = "Tap to pick up, then swipe to catch leaves";
-      bucket.style.left = `${8 + Math.random() * 82}%`;
+      const bucketMaxLeft = Math.max(
+        GAME_CONFIG.bucket.horizontalPaddingPixels,
+        field.clientWidth - 64 - GAME_CONFIG.bucket.horizontalPaddingPixels
+      );
+      bucket.style.left = `${GAME_CONFIG.bucket.horizontalPaddingPixels + Math.random() * (bucketMaxLeft - GAME_CONFIG.bucket.horizontalPaddingPixels)}px`;
       bucket.style.top = "24px";
       bucket.style.setProperty("--fall-duration", `${GAME_CONFIG.bucket.dropFallSeconds}s`);
       bucket.style.setProperty("--field-height", `${field.clientHeight}px`);
@@ -628,7 +638,7 @@ randomExtraSeconds: 0.45 adds some variation to each leaf’s fall time.
     field.addEventListener("pointerdown", event => {
       if (!bucketActive || !running || event.target.closest(".bucket-drop")) return;
       event.preventDefault();
-      field.setPointerCapture(event.pointerId);
+      if (typeof field.setPointerCapture === "function") field.setPointerCapture(event.pointerId);
       bucketSwiping = true;
       previousSwipePoint = swipePoint(event);
       moveBucket(event);
@@ -638,7 +648,7 @@ randomExtraSeconds: 0.45 adds some variation to each leaf’s fall time.
       field.addEventListener(eventName, () => {
         bucketSwiping = false;
         previousSwipePoint = null;
-        bucketCursor?.classList.remove("visible");
+        if (bucketCursor) bucketCursor.classList.remove("visible");
       });
     }
 
@@ -670,7 +680,11 @@ randomExtraSeconds: 0.45 adds some variation to each leaf’s fall time.
         hat.setAttribute("aria-hidden", "true");
         leaf.appendChild(hat);
       }
-      leaf.style.left = `${4 + Math.random() * 89}%`;
+      const leafMaxLeft = Math.max(
+        GAME_CONFIG.leafFall.horizontalPaddingPixels,
+        field.clientWidth - 68 - GAME_CONFIG.leafFall.horizontalPaddingPixels
+      );
+      leaf.style.left = `${GAME_CONFIG.leafFall.horizontalPaddingPixels + Math.random() * (leafMaxLeft - GAME_CONFIG.leafFall.horizontalPaddingPixels)}px`;
       leaf.style.top = `${35 + Math.random() * 55}px`;
       leaf.style.setProperty("--leaf-color", type.color);
       leaf.style.setProperty("--fall-duration", `${fallDuration}s`);
@@ -830,7 +844,7 @@ randomExtraSeconds: 0.45 adds some variation to each leaf’s fall time.
       bucketSwiping = false;
       previousSwipePoint = null;
       bucketAvailableRound = GAME_CONFIG.bucket.firstDropRound;
-      bucketCursor?.remove();
+      if (bucketCursor) bucketCursor.remove();
       bucketCursor = null;
       field.classList.remove("bucket-equipped");
       scoreForm.hidden = true;
@@ -855,8 +869,9 @@ randomExtraSeconds: 0.45 adds some variation to each leaf’s fall time.
       soundButton.title = soundEnabled ? "Sound on" : "Sound off";
       soundButton.textContent = soundEnabled ? "♫" : "♪";
       if (soundEnabled) {
-        audioContext ||= new AudioContext();
-        audioContext.resume();
+        const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+        if (!audioContext && AudioContextConstructor) audioContext = new AudioContextConstructor();
+        if (audioContext) audioContext.resume();
         playTone(660, 0.12, "triangle");
       }
     });
