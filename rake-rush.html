@@ -194,7 +194,7 @@
       </div>
 
       <div class="below-field">
-        <p class="status" id="status" aria-live="polite">Tap a leaf to rake it. Let one fall and lose a life.</p>
+        <p class="status" id="status" aria-live="polite">Tap a leaf!</p>
         <div class="legend" aria-label="Leaf point values">
           <span class="legend-item"><i class="swatch" id="redSwatch"></i><span id="redLegend"></span></span>
           <span class="legend-item"><i class="swatch" id="amberSwatch"></i><span id="amberLegend"></span></span>
@@ -320,7 +320,7 @@
         `Catch the leaves before they hit the ground. Start with ${GAME_CONFIG.lives.starting} lives, earn ${GAME_CONFIG.lives.roundClearBonus} each round, and watch the wind pick up.`;
       document.getElementById("timerDisplay").textContent = String(GAME_CONFIG.roundSeconds);
       document.getElementById("overlayText").textContent =
-        `${GAME_CONFIG.roundSeconds} seconds per round. Start with ${GAME_CONFIG.lives.starting} lives and earn ${GAME_CONFIG.lives.roundClearBonus} more each time you clear a round. A golden leaf drops every round for bonus points.`;
+        `${GAME_CONFIG.roundSeconds} seconds per round. Start with ${GAME_CONFIG.lives.starting} lives and earn ${GAME_CONFIG.lives.roundClearBonus} more each time you clear a round. A golden leaf drops every round for bonus points. On bucket rounds, the timer waits until the bucket is caught or lands.`;
 
       for (const leaf of GAME_CONFIG.normalLeaves) {
         document.getElementById(`${leaf.name}Swatch`).style.setProperty("--swatch", leaf.color);
@@ -334,7 +334,7 @@
       document.getElementById("santaLegend").textContent = `Santa hat +${GAME_CONFIG.santaLeaf.extraLives} lives, every ${GAME_CONFIG.santaLeaf.everyRounds} rounds`;
       document.getElementById("bucketLegend").textContent = `Bucket every ${GAME_CONFIG.bucket.repeatEveryRounds} rounds`;
       document.getElementById("instructionsText").textContent =
-        `Tap or click leaves to collect points. A leaf that reaches the ground costs one life. Each round lasts ${GAME_CONFIG.roundSeconds} seconds; every new round brings faster leaves and a quicker drop rate. Catch the gold leaf for a round-scaled bonus, a rainbow leaf for ${GAME_CONFIG.rainbowLeaf.goldMultiplier} times that bonus every ${GAME_CONFIG.rainbowLeaf.everyRounds} rounds, a Santa-hat leaf for ${GAME_CONFIG.santaLeaf.extraLives} extra lives every ${GAME_CONFIG.santaLeaf.everyRounds} rounds, or pick up the bucket every ${GAME_CONFIG.bucket.repeatEveryRounds} rounds and swipe through leaves. The bucket lasts across rounds until a leaf hits the ground; then ${GAME_CONFIG.bucket.cooldownFullRounds} full rounds must pass before another appears.`;
+        `Tap or click leaves to collect points. A leaf that reaches the ground costs one life. Each round lasts ${GAME_CONFIG.roundSeconds} seconds; every new round brings faster leaves and a quicker drop rate. Catch the gold leaf for a round-scaled bonus, a rainbow leaf for ${GAME_CONFIG.rainbowLeaf.goldMultiplier} times that bonus every ${GAME_CONFIG.rainbowLeaf.everyRounds} rounds, or a Santa-hat leaf for ${GAME_CONFIG.santaLeaf.extraLives} extra lives every ${GAME_CONFIG.santaLeaf.everyRounds} rounds. On eligible bucket rounds, the bucket arrives alone: no leaves fall and the timer stays paused until you pick it up or it lands. Then swipe through leaves; the bucket lasts across rounds until a leaf hits the ground. After losing it, ${GAME_CONFIG.bucket.cooldownFullRounds} full rounds must pass before another appears.`;
     }
 
     function updateHud() {
@@ -568,15 +568,18 @@
         field.appendChild(bucketCursor);
         statusDisplay.textContent = "Bucket ready! Swipe through falling leaves to catch them.";
         playTone(GAME_CONFIG.audio.bucketFrequency, GAME_CONFIG.audio.specialDurationSeconds, "triangle");
+        startRoundPlay();
       }, { once: true });
       bucket.addEventListener("animationend", event => {
         if (event.animationName !== "leaf-fall" || !bucket.isConnected || !running) return;
         bucket.remove();
         bucketAvailableRound = Math.max(bucketAvailableRound, round + GAME_CONFIG.bucket.cooldownFullRounds + 1);
-        statusDisplay.textContent = "The bucket hit the ground. Another one can appear after four full rounds.";
+        statusDisplay.textContent = `The bucket hit the ground. Another one can appear after ${GAME_CONFIG.bucket.cooldownFullRounds} full rounds.`;
+        startRoundPlay();
       });
       field.appendChild(bucket);
       statusDisplay.textContent = "Bucket incoming! Tap it to pick it up.";
+      return true;
     }
 
     function swipePoint(event) {
@@ -713,7 +716,7 @@
       if (lives <= 0) {
         endGame("out-of-lives");
       } else {
-        const bucketMessage = lostBucket ? " The bucket is lost; another can drop after four full rounds." : "";
+        const bucketMessage = lostBucket ? ` The bucket is lost; another can drop after ${GAME_CONFIG.bucket.cooldownFullRounds} full rounds.` : "";
         statusDisplay.textContent = `Leaf got away. ${lives} ${lives === 1 ? "life" : "lives"} left. Watch the field!${bucketMessage}`;
       }
     }
@@ -734,12 +737,19 @@
       stopRoundTimers();
       clearFallingLeaves();
       running = true;
+      timerDisplay.textContent = String(GAME_CONFIG.roundSeconds);
+      roundDisplay.textContent = String(round);
+      overlay.hidden = true;
+      if (!bucketActive && round >= bucketAvailableRound && addBucketDrop()) return;
+      startRoundPlay();
+    }
+
+    function startRoundPlay() {
+      if (!running) return;
       goldenSpawned = true;
       roundStartedAt = Date.now();
       roundEndsAt = roundStartedAt + GAME_CONFIG.roundSeconds * 1000;
       timerDisplay.textContent = String(GAME_CONFIG.roundSeconds);
-      roundDisplay.textContent = String(round);
-      overlay.hidden = true;
       statusDisplay.textContent = bucketActive
         ? `Round ${round}. Bucket ready—swipe through leaves!`
         : round === 1
