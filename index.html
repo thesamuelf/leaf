@@ -114,33 +114,6 @@
     .about-answer { margin: 17px 0 0; color: var(--muted); font-size: 16px; line-height: 1.65; }
     .about-signoff { margin: 19px 0 0; color: var(--green); font-size: 13px; font-weight: 900; text-transform: uppercase; }
 
-    .game-section { background: var(--green); color: var(--cream); }
-    .game-wrap { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 60px 0 66px; }
-    .game-section .eyebrow { color: var(--yellow); }
-    .game-section .section-head { align-items: center; }
-    .game-section .section-intro { color: #d3ddce; }
-    .game-board { position: relative; overflow: hidden; min-height: 300px; border: 2px solid var(--cream); background: #dce8bd; touch-action: manipulation; }
-    .game-board::before { position: absolute; inset: 0; content: ""; opacity: 0.55; background: repeating-linear-gradient(165deg, transparent 0 32px, rgba(33, 78, 59, 0.13) 33px 35px, transparent 36px 68px); pointer-events: none; }
-    .game-ground { position: absolute; right: -3%; bottom: -55px; left: -3%; height: 110px; border-radius: 50% 50% 0 0; background: #8eae65; }
-    .game-hud { position: absolute; z-index: 3; top: 12px; right: 12px; left: 12px; display: flex; justify-content: space-between; color: var(--ink); font-size: 13px; font-weight: 900; text-transform: uppercase; pointer-events: none; }
-    .game-hud span { padding: 7px 10px; border: 1px solid var(--ink); background: var(--cream); }
-    .game-message { position: absolute; z-index: 4; inset: 0; display: grid; align-content: center; justify-items: center; gap: 8px; padding: 22px; color: var(--ink); background: rgba(242, 234, 220, 0.88); text-align: center; }
-    .game-message[hidden] { display: none; }
-    .game-message h3 { margin: 0; font-size: clamp(28px, 5vw, 44px); }
-    .game-message p { max-width: 440px; margin: 0; line-height: 1.5; }
-    .game-button { min-height: 42px; margin-top: 9px; border: 2px solid var(--ink); border-radius: 3px; padding: 9px 16px; color: var(--cream); background: var(--orange); font-weight: 900; cursor: pointer; box-shadow: 3px 3px 0 var(--ink); }
-    .game-button:hover { background: #c94d28; }
-    .leaf-target { position: absolute; z-index: 2; width: 52px; height: 52px; display: grid; place-items: center; border: 0; padding: 0; background: transparent; cursor: pointer; animation: leaf-fall var(--fall-time, 5s) linear forwards, leaf-sway 1.7s ease-in-out infinite alternate; touch-action: manipulation; }
-    .leaf-target::before { content: ""; width: 30px; height: 38px; border: 2px solid rgba(29, 41, 36, 0.6); border-radius: 2px 85% 2px 85%; background: var(--leaf-color, #e76334); transform: rotate(42deg); box-shadow: inset 3px -4px 0 rgba(255,255,255,0.2); }
-    .leaf-target::after { position: absolute; width: 2px; height: 21px; content: ""; background: rgba(29, 41, 36, 0.58); transform: rotate(42deg) translate(2px, 0); }
-    .leaf-target:hover::before { filter: brightness(1.12); }
-    .leaf-target:active { scale: 0.78; }
-    @keyframes leaf-fall { from { translate: 0 -55px; } to { translate: 0 360px; } }
-    @keyframes leaf-sway { from { rotate: -14deg; } to { rotate: 14deg; } }
-    .ground-leaf { position: absolute; z-index: 1; bottom: 32px; width: 22px; height: 13px; border-radius: 2px 80% 2px 80%; background: var(--leaf-color, #e76334); rotate: 36deg; opacity: 0.88; }
-    .game-controls { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 13px; color: #d3ddce; font-size: 13px; }
-    .game-controls strong { color: var(--yellow); }
-
     .promise { padding-top: 58px; }
     .promise-grid { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); }
     .promise-side { padding: 25px 26px 28px 0; }
@@ -174,7 +147,7 @@
       .topbar nav a { font-size: 11px; }
       .brand { gap: 7px; font-size: 13px; }
       .hero { min-height: 430px; }
-      .hero-inner, .section, .game-wrap, .local-inner { width: calc(100% - 32px); }
+      .hero-inner, .section, .local-inner { width: calc(100% - 32px); }
       .hero-inner { padding-top: 46px; }
       h1 { font-size: clamp(53px, 17vw, 82px); }
       .hero-copy { max-width: 300px; font-size: 16px; }
@@ -183,10 +156,6 @@
       .section-head { align-items: start; flex-direction: column; }
       .about { grid-template-columns: 1fr; gap: 23px; }
       .about-story { padding-left: 16px; }
-      .game-wrap { padding: 48px 0; }
-      .game-section .section-head { align-items: start; }
-      .game-board { min-height: 320px; }
-      .game-controls { align-items: start; flex-direction: column; gap: 4px; }
       .promise-grid { grid-template-columns: 1fr; }
       .promise-side { padding: 21px 0; }
       .promise-side + .promise-side { border-top: 1px solid var(--ink); border-left: 0; padding: 21px 0; }
@@ -217,9 +186,9 @@
         <p class="hero-kicker enter">The leaves have been warned.</p>
         <h1 class="enter delay">Leaves,<span>beware.</span></h1>
         <p class="hero-copy enter delay">We rake the yard, load up every last leaf, and take them with us. Fast work. No leaf bags camping in your yard.</p>
-        <a class="hero-cta" href="#rake-rush">Take the 20-second rake test <span aria-hidden="true">-&gt;</span></a>
+        <a class="hero-cta" href="rake-rush.html">Take the rake test <span aria-hidden="true">-&gt;</span></a>
       </div>
-      <div class="hero-doodle" aria-hidden="true">DR!</div>
+      <div class="hero-doodle" aria-hidden="true">Dr!</div>
     </section>
 
     <div class="ticker" aria-label="Dr Drip promises">
@@ -234,28 +203,9 @@
         <h2>So, who is<br>Dr Drip?</h2>
       </div>
       <div class="about-story">
-        <p class="about-question">Is Dr Drip one person? A whole team? Artificial intelligence? A Mega Charizard X?</p>
+        <p class="about-question">Is Dr Drip one person? A whole team? AI? A Mega Charizard X?</p>
         <p class="about-answer">No one knows. The only thing anyone can confirm: Dr Drip shows up, eliminates every leaf in a flash, and dares the rest to fall.</p>
         <p class="about-signoff">The identity stays a mystery. The clean yard doesn't.</p>
-      </div>
-    </section>
-
-    <section class="game-section" id="rake-rush">
-      <div class="game-wrap">
-        <div class="section-head">
-          <div><p class="eyebrow">Try out your raking reflexes</p><h2>Rake Rush</h2></div>
-          <p class="section-intro">Leaves keep falling. Tap as many as you can before the clock runs out. Dr Drip says you won't beat the crew.</p>
-        </div>
-        <div class="game-board" id="gameBoard" aria-label="Rake Rush game field">
-          <div class="game-hud"><span>Raked <b id="score">0</b></span><span>Time <b id="timer">20</b></span></div>
-          <div class="game-ground" aria-hidden="true"></div>
-          <div class="game-message" id="gameMessage">
-            <h3 id="messageTitle">Ready, raker?</h3>
-            <p id="messageText">Tap the falling leaves. Clear the yard before time runs out.</p>
-            <button class="game-button" id="startGame" type="button">Start raking</button>
-          </div>
-        </div>
-        <div class="game-controls"><span>Leaves removed: <strong id="resultScore">0</strong></span><span id="gameStatus" aria-live="polite">Your rake is standing by.</span></div>
       </div>
     </section>
 
@@ -272,7 +222,7 @@
             <li>State-of-the-art, USA-made rakes.</li>
             <li>Ergonomic handles. Metal frames.</li>
             <li>Show up. Finish. Move on.</li>
-            <li>RMS Crazy Fun dumpling for the kids.</li>
+            <li>Mike Drop.</li>
           </ul>
         </div>
         <div class="promise-side">
@@ -302,95 +252,5 @@
 
   <footer><span>Dr Drip Leaf Removal</span><span>Show up. Rake up. Roll out.</span></footer>
 
-  <script>
-    const board = document.getElementById("gameBoard");
-    const gameMessage = document.getElementById("gameMessage");
-    const startGameButton = document.getElementById("startGame");
-    const scoreDisplay = document.getElementById("score");
-    const timerDisplay = document.getElementById("timer");
-    const resultScore = document.getElementById("resultScore");
-    const gameStatus = document.getElementById("gameStatus");
-    const colors = ["#e76334", "#e4ad34", "#9a583a", "#77964d", "#b94b38"];
-    let score = 0;
-    let timeLeft = 20;
-    let running = false;
-    let spawnTimer = null;
-    let countdownTimer = null;
-
-    function addGroundLeaf() {
-      const leaf = document.createElement("span");
-      leaf.className = "ground-leaf";
-      leaf.setAttribute("aria-hidden", "true");
-      leaf.style.left = `${Math.random() * 94 + 3}%`;
-      leaf.style.setProperty("--leaf-color", colors[Math.floor(Math.random() * colors.length)]);
-      board.appendChild(leaf);
-    }
-
-    function dropLeaf() {
-      if (!running) return;
-      const leaf = document.createElement("button");
-      const fallDuration = 3.8 + Math.random() * 1.8;
-      leaf.className = "leaf-target";
-      leaf.type = "button";
-      leaf.setAttribute("aria-label", "Rake falling leaf");
-      leaf.style.left = `${Math.random() * 88 + 3}%`;
-      leaf.style.top = `${Math.random() * 28 + 12}px`;
-      leaf.style.setProperty("--leaf-color", colors[Math.floor(Math.random() * colors.length)]);
-      leaf.style.setProperty("--fall-time", `${fallDuration}s`);
-      leaf.addEventListener("click", () => {
-        if (!running || !leaf.isConnected) return;
-        score += 1;
-        scoreDisplay.textContent = String(score);
-        resultScore.textContent = String(score);
-        gameStatus.textContent = score === 1 ? "One leaf down. Keep raking!" : `${score} leaves down. Nice work!`;
-        leaf.remove();
-        addGroundLeaf();
-      }, { once: true });
-      leaf.addEventListener("animationend", event => {
-        if (event.animationName === "leaf-fall" && leaf.isConnected) {
-          leaf.remove();
-          addGroundLeaf();
-        }
-      });
-      board.appendChild(leaf);
-    }
-
-    function finishGame() {
-      running = false;
-      clearInterval(spawnTimer);
-      clearInterval(countdownTimer);
-      board.querySelectorAll(".leaf-target").forEach(leaf => leaf.remove());
-      gameMessage.hidden = false;
-      document.getElementById("messageTitle").textContent = "Time!";
-      document.getElementById("messageText").textContent = score === 0
-        ? "The leaves got away this round. Give it another go."
-        : `You raked ${score} ${score === 1 ? "leaf" : "leaves"} in 20 seconds. Dr Drip is taking notes.`;
-      startGameButton.textContent = "Play again";
-      gameStatus.textContent = "Round complete. Want another go?";
-    }
-
-    function startGame() {
-      clearInterval(spawnTimer);
-      clearInterval(countdownTimer);
-      board.querySelectorAll(".leaf-target, .ground-leaf").forEach(leaf => leaf.remove());
-      score = 0;
-      timeLeft = 20;
-      running = true;
-      scoreDisplay.textContent = "0";
-      resultScore.textContent = "0";
-      timerDisplay.textContent = "20";
-      gameMessage.hidden = true;
-      gameStatus.textContent = "Rake fast!";
-      for (let index = 0; index < 5; index += 1) dropLeaf();
-      spawnTimer = setInterval(dropLeaf, 750);
-      countdownTimer = setInterval(() => {
-        timeLeft -= 1;
-        timerDisplay.textContent = String(timeLeft);
-        if (timeLeft <= 0) finishGame();
-      }, 1000);
-    }
-
-    startGameButton.addEventListener("click", startGame);
-  </script>
 </body>
 </html>
