@@ -107,6 +107,13 @@
     h2 { margin: 0; font-size: clamp(34px, 6vw, 62px); line-height: 0.98; }
     .section-intro { max-width: 370px; margin: 0; color: var(--muted); line-height: 1.55; }
 
+    .about { display: grid; grid-template-columns: 0.9fr 1.1fr; align-items: center; gap: clamp(28px, 8vw, 110px); border-bottom: 1px solid var(--line); }
+    .about-heading h2 { font-size: clamp(42px, 7vw, 76px); }
+    .about-story { border-left: 3px solid var(--orange); padding: 5px 0 5px 22px; }
+    .about-question { margin: 0; font-size: clamp(19px, 2.5vw, 25px); font-weight: 800; line-height: 1.35; }
+    .about-answer { margin: 17px 0 0; color: var(--muted); font-size: 16px; line-height: 1.65; }
+    .about-signoff { margin: 19px 0 0; color: var(--green); font-size: 13px; font-weight: 900; text-transform: uppercase; }
+
     .game-section { background: var(--green); color: var(--cream); }
     .game-wrap { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 60px 0 66px; }
     .game-section .eyebrow { color: var(--yellow); }
@@ -174,6 +181,8 @@
       .hero-doodle { right: 9%; bottom: 20px; }
       .section { padding: 48px 0; }
       .section-head { align-items: start; flex-direction: column; }
+      .about { grid-template-columns: 1fr; gap: 23px; }
+      .about-story { padding-left: 16px; }
       .game-wrap { padding: 48px 0; }
       .game-section .section-head { align-items: start; }
       .game-board { min-height: 320px; }
@@ -195,6 +204,7 @@
   <header class="topbar">
     <a class="brand" href="#home" aria-label="Dr Drip Leaf Removal home"><span class="brand-mark" aria-hidden="true">D</span><span>Dr Drip Leaf Removal</span></a>
     <nav aria-label="Main navigation">
+      <a href="#about">About Dr Drip</a>
       <a href="#difference">The difference</a>
       <a href="#local">Local love</a>
       <a class="nav-game" href="#rake-rush">Play Rake Rush</a>
@@ -217,6 +227,18 @@
         <span>Rake it</span><span>Take it</span><span>Done today</span><span>No yard bags</span><span>Rake it</span><span>Take it</span><span>Done today</span><span>No yard bags</span>
       </div>
     </div>
+
+    <section class="section about" id="about">
+      <div class="about-heading">
+        <p class="eyebrow">A local legend. A leaf-level mystery.</p>
+        <h2>So, who is<br>Dr Drip?</h2>
+      </div>
+      <div class="about-story">
+        <p class="about-question">Is Dr Drip one person? A whole team? Artificial intelligence? A Mega Charizard X?</p>
+        <p class="about-answer">No one knows. The only thing anyone can confirm: Dr Drip shows up, eliminates every leaf in a flash, and dares the rest to fall.</p>
+        <p class="about-signoff">The identity stays a mystery. The clean yard doesn't.</p>
+      </div>
+    </section>
 
     <section class="game-section" id="rake-rush">
       <div class="game-wrap">
@@ -257,7 +279,7 @@
           <h3>The other guys</h3>
           <ul>
             <li>Leaves bagged and left in your yard for up to two weeks.</li>
-            <li>100% plastic rakes.</li>
+            <li>100% plastic rakes from Temu.</li>
             <li>Snack breaks.</li>
             <li>Still looking at those bags?</li>
           </ul>
