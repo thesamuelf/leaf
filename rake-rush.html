@@ -67,7 +67,8 @@
     .tree.right { right: 8%; bottom: 22%; transform: scale(0.67); }
     .ground { position: absolute; z-index: -1; right: -8%; bottom: -96px; left: -8%; height: 160px; border-radius: 50% 50% 0 0; background: #6f8d48; }
 
-    .leaf { position: absolute; z-index: 3; width: 56px; height: 56px; display: grid; place-items: center; border: 0; padding: 0; color: transparent; background: transparent; cursor: pointer; animation: leaf-fall var(--fall-duration) linear forwards, leaf-drift 1.25s ease-in-out infinite alternate; touch-action: manipulation; }
+    /* changed this to make the leafs easier to click: width: 56px; height: 56px; */
+    .leaf { position: absolute; z-index: 3; width: 68px; height: 68px; display: grid; place-items: center; border: 0; padding: 0; color: transparent; background: transparent; cursor: pointer; animation: leaf-fall var(--fall-duration) linear forwards, leaf-drift 1.25s ease-in-out infinite alternate; touch-action: manipulation; }
     .leaf::before { width: 29px; height: 38px; content: ""; border: 2px solid rgba(16,43,36,0.62); border-radius: 2px 85% 2px 85%; background: var(--leaf-color); box-shadow: inset 3px -4px 0 rgba(255,255,255,0.2); transform: rotate(42deg); }
     .leaf::after { position: absolute; width: 2px; height: 22px; content: ""; background: rgba(16,43,36,0.68); transform: rotate(42deg) translate(2px, 0); }
     .leaf:hover::before { filter: brightness(1.12); }
@@ -225,7 +226,7 @@
     const GAME_CONFIG = {
       roundSeconds: 25,
       lives: {
-        starting: 5,
+        starting: 3,
         roundClearBonus: 1
       },
       normalLeaves: [
@@ -249,9 +250,15 @@
         extraLives: 5,
         color: "#d83932"
       },
+      /*
+baseSeconds: 4.8 sets the starting fall duration. Lower means faster.
+fasterPerRound: 0.22 subtracts time from the fall duration each round. Higher means it speeds up more each round.
+minimumSeconds: 1.15 is the fastest the leaves can fall; raising it sets a slower speed limit.
+randomExtraSeconds: 0.45 adds some variation to each leaf’s fall time.
+      */  
       leafFall: {
-        baseSeconds: 4.8,
-        fasterPerRound: 0.22,
+        baseSeconds: 4.2,
+        fasterPerRound: 0.28,
         maximumSpeedRounds: 12,
         minimumSeconds: 1.15,
         randomExtraSeconds: 0.45
