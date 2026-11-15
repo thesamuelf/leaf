@@ -78,6 +78,8 @@
     .answer:hover:not(:disabled) { background: #fff8df; transform: translateY(-2px); }
     .answer:active:not(:disabled) { transform: scale(0.97); }
     .answer:disabled { cursor: default; }
+    .answer.emoji-tile { border-color: #9c9b68; color: var(--forest-deep); background: #e4d7a8; font-size: clamp(24px, 6vw, 38px); cursor: default; }
+    .answer.emoji-tile:hover { transform: none; }
     .answer.correct { border-color: #276843; color: white; background: #3b8b58; }
     .answer.incorrect { border-color: #a63d2b; color: white; background: #c95037; }
     .problem {
@@ -144,7 +146,7 @@
     <section aria-label="Math Dash game">
       <div class="hud">
         <div class="stat"><span class="stat-label">Question</span><strong class="stat-value" id="questionValue">0</strong></div>
-        <div class="stat"><span class="stat-label">Time</span><strong class="stat-value" id="timerValue">60</strong></div>
+        <div class="stat"><span class="stat-label">Time</span><strong class="stat-value" id="timerValue">--</strong></div>
         <div class="stat"><span class="stat-label">Score</span><strong class="stat-value" id="scoreValue">0</strong></div>
         <div class="stat"><span class="stat-label">Streak</span><strong class="stat-value" id="streakValue">0</strong></div>
       </div>
@@ -165,13 +167,13 @@
           <button class="answer" type="button" data-answer-index="7"></button>
         </div>
         <div class="overlay" id="overlay" aria-live="polite">
-          <p class="overlay-kicker" id="overlayKicker">60-second challenge</p>
+          <p class="overlay-kicker" id="overlayKicker">Timed challenge</p>
           <h2 id="overlayTitle">Ready, brainiac?</h2>
           <p id="overlayText">Answer as many as you can. The question types and points change as your question count climbs.</p>
           <button class="primary" id="startButton" type="button">Start game</button>
         </div>
       </div>
-      <p id="feedback" aria-live="polite">One correct answer hides among eight squares.</p>
+      <p id="feedback" aria-live="polite">Find the correct answer among six numbers and two emoji tiles.</p>
 
       <div class="rules">
         <p><strong>Q1–5</strong> Add/subtract · +2 / −3</p>
@@ -188,8 +190,14 @@
 
   <script>
     const GAME_CONFIG = {
-      roundSeconds: 60,
-      answerCount: 8,
+      roundSeconds: 70,
+      answerCount: 6,
+      emojiCount: 2,
+      emojis: [
+        "🐿️", "🦉", "🍄", "🌻", "🪵", "🐞", "🌰", "🍂", "🐸", "🦊",
+        "😀", "😃", "😄", "😁", "😆", "😊", "🙂", "😉", "😎", "🤩", "🥳", "😍", "🤔", "😴", "🤗", "😋",
+        "🎅", "🤶", "🧑‍🎄", "🎄", "🎁", "⛄", "☃️", "❄️", "⭐", "🌟", "🔔", "🛷", "🦌", "🧦", "🍬", "🍭", "🕯️", "🧤", "🧣", "✨"
+      ],
       stages: [
         { id: "arithmetic", firstQuestion: 1, lastQuestion: 5, label: "Add / subtract", pointsCorrect: 2, pointsWrong: -3 },
         { id: "multiply", firstQuestion: 6, lastQuestion: 10, label: "Multiplication", pointsCorrect: 4, pointsWrong: -4 },
@@ -207,11 +215,11 @@
       },
       divide: {
         maxDividend: 100,
-        maxDivisor: 100,
+        maxDivisor: 10,
         maxAnswer: 99
       },
       powers: {
-        maxBase: 10,
+        maxBase: 5,
         exponents: [2, 3]
       },
       distractors: {
@@ -231,6 +239,8 @@
     const feedback = document.getElementById("feedback");
     const overlay = document.getElementById("overlay");
     const startButton = document.getElementById("startButton");
+    timerValue.textContent = String(GAME_CONFIG.roundSeconds);
+    document.getElementById("overlayKicker").textContent = `${GAME_CONFIG.roundSeconds}-second challenge`;
     let questionNumber = 0;
     let score = 0;
     let streak = 0;
@@ -278,7 +288,7 @@
         GAME_CONFIG.divide.maxAnswer,
         Math.floor(GAME_CONFIG.divide.maxDividend / divisor)
       );
-      const quotient = randomInt(1, maximumQuotient);
+      const quotient = randomInt(2, maximumQuotient);
       return { text: `${divisor * quotient} ÷ ${divisor}`, answer: quotient, type: "divide" };
     }
 
@@ -315,12 +325,18 @@
         const distractor = Math.max(GAME_CONFIG.distractors.minimumAnswer, answer + offset * direction);
         values.add(distractor);
       }
-      const shuffled = [...values];
-      for (let index = shuffled.length - 1; index > 0; index -= 1) {
-        const swapIndex = randomInt(0, index);
-        [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+      const cells = [...values].map(value => ({ kind: "answer", value }));
+      const availableEmojis = [...new Set(GAME_CONFIG.emojis)];
+      for (let index = 0; index < GAME_CONFIG.emojiCount && availableEmojis.length > 0; index += 1) {
+        const emojiIndex = randomInt(0, availableEmojis.length - 1);
+        const [emoji] = availableEmojis.splice(emojiIndex, 1);
+        cells.push({ kind: "emoji", value: emoji });
       }
-      return shuffled;
+      for (let index = cells.length - 1; index > 0; index -= 1) {
+        const swapIndex = randomInt(0, index);
+        [cells[index], cells[swapIndex]] = [cells[swapIndex], cells[index]];
+      }
+      return cells;
     }
 
     function updateHud() {
@@ -341,12 +357,22 @@
       problemText.innerHTML = question.text;
       const answers = makeAnswers(correctAnswer);
       answerButtons.forEach((button, index) => {
-        button.disabled = false;
-        button.classList.remove("correct", "incorrect");
-        button.textContent = String(answers[index]);
-        button.dataset.value = String(answers[index]);
+        const cell = answers[index];
+        button.classList.remove("correct", "incorrect", "emoji-tile");
+        if (cell.kind === "emoji") {
+          button.disabled = true;
+          button.classList.add("emoji-tile");
+          button.textContent = cell.value;
+          button.setAttribute("aria-label", "Decorative emoji tile");
+          delete button.dataset.value;
+        } else {
+          button.disabled = false;
+          button.textContent = String(cell.value);
+          button.setAttribute("aria-label", `Answer ${cell.value}`);
+          button.dataset.value = String(cell.value);
+        }
       });
-      feedback.textContent = "Choose an answer.";
+      feedback.textContent = "Choose one of the six number answers.";
       feedback.className = "";
       updateHud();
     }
