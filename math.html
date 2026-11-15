@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#183c31">
+  <title>Dr Drip Math Dash</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --forest: #183c31;
+      --forest-deep: #102b24;
+      --leaf: #d7e8ba;
+      --paper: #f5eedb;
+      --orange: #e85f36;
+      --sun: #f3c64e;
+      --blue: #a9d8e3;
+      --line: rgba(245, 238, 219, 0.24);
+      --cell: #244b3a;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--paper);
+      background: var(--forest-deep);
+      font-family: "Avenir Next", Avenir, "Trebuchet MS", sans-serif;
+    }
+    button { font: inherit; }
+    button:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+    .page { width: min(850px, calc(100% - 28px)); margin: 0 auto; padding: 18px 0 34px; }
+    .masthead { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+    .brand { display: flex; align-items: center; gap: 9px; font-size: 12px; font-weight: 900; text-transform: uppercase; }
+    .brand-mark { width: 30px; aspect-ratio: 1; display: grid; place-items: center; border: 2px solid var(--paper); border-radius: 50%; color: var(--forest-deep); background: var(--orange); }
+    .back-link { color: var(--leaf); font-size: 12px; font-weight: 700; text-underline-offset: 4px; }
+    .intro { display: flex; align-items: end; justify-content: space-between; gap: 18px; padding: 19px 0 14px; }
+    .kicker { margin: 0 0 5px; color: var(--sun); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(32px, 7vw, 58px); line-height: 0.95; }
+    .intro-copy { max-width: 280px; margin: 0; color: #c5d5c6; font-size: 12px; line-height: 1.45; }
+
+    .hud { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-bottom: 9px; }
+    .stat { min-height: 55px; display: flex; align-items: center; justify-content: space-between; gap: 6px; border: 1px solid var(--line); padding: 8px 11px; background: rgba(255,255,255,0.035); }
+    .stat-label { color: #c5d5c6; font-size: 9px; font-weight: 900; text-transform: uppercase; }
+    .stat-value { font-size: 19px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    #timerValue { color: var(--sun); }
+    #streakValue { color: var(--blue); }
+
+    .board-frame { position: relative; width: min(100%, 620px); margin: 0 auto; }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: repeat(3, minmax(78px, 1fr));
+      gap: 8px;
+      aspect-ratio: 1;
+      padding: 9px;
+      border: 2px solid var(--paper);
+      background: #dce8bd;
+      box-shadow: 7px 7px 0 rgba(0,0,0,0.23);
+    }
+    .answer {
+      min-width: 0;
+      display: grid;
+      place-items: center;
+      border: 2px solid #264a3b;
+      border-radius: 3px;
+      padding: 5px;
+      color: var(--forest-deep);
+      background: var(--paper);
+      font-size: clamp(18px, 5.2vw, 34px);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      cursor: pointer;
+      overflow-wrap: anywhere;
+      transition: background-color 120ms ease, transform 120ms ease;
+      touch-action: manipulation;
+    }
+    .answer:hover:not(:disabled) { background: #fff8df; transform: translateY(-2px); }
+    .answer:active:not(:disabled) { transform: scale(0.97); }
+    .answer:disabled { cursor: default; }
+    .answer.correct { border-color: #276843; color: white; background: #3b8b58; }
+    .answer.incorrect { border-color: #a63d2b; color: white; background: #c95037; }
+    .problem {
+      min-width: 0;
+      display: grid;
+      place-content: center;
+      gap: 5px;
+      border: 2px solid var(--forest-deep);
+      padding: 8px;
+      color: var(--paper);
+      background: var(--forest);
+      text-align: center;
+    }
+    .problem-label { margin: 0; color: var(--sun); font-size: 9px; font-weight: 900; text-transform: uppercase; }
+    #problemText { margin: 0; font-size: clamp(18px, 4.7vw, 31px); font-weight: 900; line-height: 1.12; overflow-wrap: anywhere; }
+    #feedback { min-height: 24px; margin: 11px 0 0; color: var(--leaf); font-size: 13px; font-weight: 800; text-align: center; }
+    #feedback.wrong { color: #ff9a79; }
+    #feedback.right { color: #bce7a8; }
+
+    .overlay { position: absolute; z-index: 4; inset: 9px; display: grid; align-content: center; justify-items: center; gap: 9px; padding: 20px; color: var(--forest-deep); background: rgba(245,238,219,0.94); text-align: center; }
+    .overlay[hidden] { display: none; }
+    .overlay-kicker { margin: 0; color: #a64629; font-size: 10px; font-weight: 900; text-transform: uppercase; }
+    .overlay h2 { margin: 0; font-size: clamp(28px, 6vw, 42px); }
+    .overlay p { max-width: 390px; margin: 0; color: #40564b; font-size: 13px; line-height: 1.45; }
+    .primary { min-height: 43px; margin-top: 5px; border: 2px solid var(--forest-deep); border-radius: 3px; padding: 9px 16px; color: var(--paper); background: var(--orange); font-weight: 900; cursor: pointer; box-shadow: 3px 3px 0 var(--forest-deep); }
+    .primary:hover { background: #c84e2a; }
+    .rules { display: flex; justify-content: space-between; gap: 14px; margin: 17px auto 0; border-top: 1px solid var(--line); padding-top: 12px; color: #c5d5c6; font-size: 11px; line-height: 1.5; }
+    .rules p { margin: 0; }
+    .rules strong { color: var(--sun); }
+    .footer { display: flex; justify-content: space-between; gap: 12px; margin-top: 25px; color: #8fa397; font-size: 10px; }
+
+    @media (max-width: 540px) {
+      .page { width: calc(100% - 20px); padding-top: 12px; }
+      .intro { align-items: start; flex-direction: column; gap: 7px; padding-top: 15px; }
+      .intro-copy { max-width: 430px; }
+      .hud { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .stat { min-height: 48px; }
+      .board { gap: 5px; padding: 6px; }
+      .board { grid-template-rows: repeat(3, minmax(0, 1fr)); }
+      .answer { font-size: clamp(17px, 6vw, 26px); }
+      .problem-label { font-size: 8px; }
+      #problemText { font-size: clamp(16px, 5.1vw, 24px); }
+      .overlay { inset: 6px; padding: 12px; }
+      .rules { flex-direction: column; gap: 6px; }
+      .footer { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="masthead">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">D</span><span>Dr Drip brain games</span></div>
+      <a class="back-link" href="index.html">Back to Dr Drip</a>
+    </header>
+
+    <section class="intro" aria-labelledby="pageTitle">
+      <div><p class="kicker">Quick thinking. Quick tapping.</p><h1 id="pageTitle">Math Dash</h1></div>
+      <p class="intro-copy">Solve the center problem. Tap the right answer before time runs out.</p>
+    </section>
+
+    <section aria-label="Math Dash game">
+      <div class="hud">
+        <div class="stat"><span class="stat-label">Question</span><strong class="stat-value" id="questionValue">0</strong></div>
+        <div class="stat"><span class="stat-label">Time</span><strong class="stat-value" id="timerValue">60</strong></div>
+        <div class="stat"><span class="stat-label">Score</span><strong class="stat-value" id="scoreValue">0</strong></div>
+        <div class="stat"><span class="stat-label">Streak</span><strong class="stat-value" id="streakValue">0</strong></div>
+      </div>
+
+      <div class="board-frame">
+        <div class="board" id="answerBoard" aria-label="Math answer board">
+          <button class="answer" type="button" data-answer-index="0"></button>
+          <button class="answer" type="button" data-answer-index="1"></button>
+          <button class="answer" type="button" data-answer-index="2"></button>
+          <button class="answer" type="button" data-answer-index="3"></button>
+          <div class="problem" aria-live="polite" aria-atomic="true">
+            <p class="problem-label" id="stageLabel">Ready?</p>
+            <p id="problemText">Press start</p>
+          </div>
+          <button class="answer" type="button" data-answer-index="4"></button>
+          <button class="answer" type="button" data-answer-index="5"></button>
+          <button class="answer" type="button" data-answer-index="6"></button>
+          <button class="answer" type="button" data-answer-index="7"></button>
+        </div>
+        <div class="overlay" id="overlay" aria-live="polite">
+          <p class="overlay-kicker" id="overlayKicker">60-second challenge</p>
+          <h2 id="overlayTitle">Ready, brainiac?</h2>
+          <p id="overlayText">Answer as many as you can. The question types and points change as your question count climbs.</p>
+          <button class="primary" id="startButton" type="button">Start game</button>
+        </div>
+      </div>
+      <p id="feedback" aria-live="polite">One correct answer hides among eight squares.</p>
+
+      <div class="rules">
+        <p><strong>Q1–5</strong> Add/subtract · +2 / −3</p>
+        <p><strong>Q6–10</strong> Multiply · +4 / −4</p>
+        <p><strong>Q11–15</strong> Divide · +4 / −4</p>
+        <p><strong>Q16–25</strong> Mixed · type scoring</p>
+        <p><strong>Q26–30</strong> Squares/cubes · +7 / −7</p>
+        <p><strong>Q31+</strong> PEMDAS · +10 / −3</p>
+      </div>
+    </section>
+
+    <footer class="footer"><span>DR DRIP BRAIN GAMES</span><span>Think quick. Tap quicker.</span></footer>
+  </main>
+
+  <script>
+    const GAME_CONFIG = {
+      roundSeconds: 60,
+      answerCount: 8,
+      stages: [
+        { id: "arithmetic", firstQuestion: 1, lastQuestion: 5, label: "Add / subtract", pointsCorrect: 2, pointsWrong: -3 },
+        { id: "multiply", firstQuestion: 6, lastQuestion: 10, label: "Multiplication", pointsCorrect: 4, pointsWrong: -4 },
+        { id: "divide", firstQuestion: 11, lastQuestion: 15, label: "Division", pointsCorrect: 4, pointsWrong: -4 },
+        { id: "mixed", firstQuestion: 16, lastQuestion: 25, label: "Mixed operations" },
+        { id: "powers", firstQuestion: 26, lastQuestion: 30, label: "Squares / cubes", pointsCorrect: 7, pointsWrong: -7 },
+        { id: "pemdas", firstQuestion: 31, lastQuestion: Infinity, label: "PEMDAS", pointsCorrect: 10, pointsWrong: -3 }
+      ],
+      arithmetic: {
+        maxNumber: 20,
+        allowNegativeAnswers: false
+      },
+      multiply: {
+        maxFactor: 10
+      },
+      divide: {
+        maxDividend: 100,
+        maxDivisor: 100,
+        maxAnswer: 99
+      },
+      powers: {
+        maxBase: 10,
+        exponents: [2, 3]
+      },
+      distractors: {
+        maximumOffset: 12,
+        minimumAnswer: 0
+      },
+      feedbackDelayMs: 350
+    };
+
+    const answerButtons = [...document.querySelectorAll(".answer")];
+    const questionValue = document.getElementById("questionValue");
+    const timerValue = document.getElementById("timerValue");
+    const scoreValue = document.getElementById("scoreValue");
+    const streakValue = document.getElementById("streakValue");
+    const stageLabel = document.getElementById("stageLabel");
+    const problemText = document.getElementById("problemText");
+    const feedback = document.getElementById("feedback");
+    const overlay = document.getElementById("overlay");
+    const startButton = document.getElementById("startButton");
+    let questionNumber = 0;
+    let score = 0;
+    let streak = 0;
+    let correctAnswer = null;
+    let secondsLeft = GAME_CONFIG.roundSeconds;
+    let running = false;
+    let locked = false;
+    let currentQuestionType = null;
+    let roundTimer = null;
+    let nextQuestionTimer = null;
+
+    function randomInt(minimum, maximum) {
+      return Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+    }
+
+    function getStage(number) {
+      return GAME_CONFIG.stages.find(stage => number >= stage.firstQuestion && number <= stage.lastQuestion);
+    }
+
+    function getQuestionType(number) {
+      const stage = getStage(number);
+      if (stage.id !== "mixed") return stage.id;
+      return ["arithmetic", "multiply", "divide"][randomInt(0, 2)];
+    }
+
+    function makeArithmeticQuestion() {
+      const first = randomInt(0, GAME_CONFIG.arithmetic.maxNumber);
+      const second = randomInt(0, GAME_CONFIG.arithmetic.maxNumber);
+      const useAddition = Math.random() < 0.5;
+      if (useAddition) return { text: `${first} + ${second}`, answer: first + second, type: "arithmetic" };
+      const high = Math.max(first, second);
+      const low = Math.min(first, second);
+      return { text: `${high} − ${low}`, answer: high - low, type: "arithmetic" };
+    }
+
+    function makeMultiplyQuestion() {
+      const first = randomInt(0, GAME_CONFIG.multiply.maxFactor);
+      const second = randomInt(0, GAME_CONFIG.multiply.maxFactor);
+      return { text: `${first} × ${second}`, answer: first * second, type: "multiply" };
+    }
+
+    function makeDivisionQuestion() {
+      const divisor = randomInt(1, GAME_CONFIG.divide.maxDivisor);
+      const maximumQuotient = Math.min(
+        GAME_CONFIG.divide.maxAnswer,
+        Math.floor(GAME_CONFIG.divide.maxDividend / divisor)
+      );
+      const quotient = randomInt(1, maximumQuotient);
+      return { text: `${divisor * quotient} ÷ ${divisor}`, answer: quotient, type: "divide" };
+    }
+
+    function makePowerQuestion() {
+      const base = randomInt(2, GAME_CONFIG.powers.maxBase);
+      const exponent = GAME_CONFIG.powers.exponents[randomInt(0, GAME_CONFIG.powers.exponents.length - 1)];
+      return { text: `${base}<sup>${exponent}</sup>`, answer: base ** exponent, type: "powers" };
+    }
+
+    function makePemdasQuestion() {
+      const templates = [
+        () => { const a = randomInt(1, 12); const b = randomInt(1, 9); const c = randomInt(2, 5); return { text: `(${a} + ${b}) × ${c}`, answer: (a + b) * c }; },
+        () => { const a = randomInt(4, 20); const b = randomInt(1, 5); const c = randomInt(2, 8); return { text: `${a} − ${b} × ${c}`, answer: a - b * c }; },
+        () => { const a = randomInt(2, 9); const b = randomInt(1, 8); const c = randomInt(1, 9); return { text: `${a} × ${b} + ${c}`, answer: a * b + c }; },
+        () => { const a = randomInt(2, 9); const b = randomInt(1, 8); const product = a * b; const c = randomInt(1, 12); return { text: `${product} ÷ ${a} + ${c}`, answer: b + c }; }
+      ];
+      return { ...templates[randomInt(0, templates.length - 1)](), type: "pemdas" };
+    }
+
+    function makeQuestion(number) {
+      const type = getQuestionType(number);
+      if (type === "arithmetic") return makeArithmeticQuestion();
+      if (type === "multiply") return makeMultiplyQuestion();
+      if (type === "divide") return makeDivisionQuestion();
+      if (type === "powers") return makePowerQuestion();
+      return makePemdasQuestion();
+    }
+
+    function makeAnswers(answer) {
+      const values = new Set([answer]);
+      while (values.size < GAME_CONFIG.answerCount) {
+        const offset = randomInt(1, GAME_CONFIG.distractors.maximumOffset);
+        const direction = Math.random() < 0.5 ? -1 : 1;
+        const distractor = Math.max(GAME_CONFIG.distractors.minimumAnswer, answer + offset * direction);
+        values.add(distractor);
+      }
+      const shuffled = [...values];
+      for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const swapIndex = randomInt(0, index);
+        [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+      }
+      return shuffled;
+    }
+
+    function updateHud() {
+      questionValue.textContent = String(questionNumber);
+      timerValue.textContent = String(secondsLeft);
+      scoreValue.textContent = String(score);
+      streakValue.textContent = String(streak);
+    }
+
+    function renderQuestion() {
+      if (!running || secondsLeft <= 0) return;
+      questionNumber += 1;
+      const stage = getStage(questionNumber);
+      const question = makeQuestion(questionNumber);
+      correctAnswer = question.answer;
+      currentQuestionType = question.type;
+      stageLabel.textContent = `Q${questionNumber} · ${stage.label}`;
+      problemText.innerHTML = question.text;
+      const answers = makeAnswers(correctAnswer);
+      answerButtons.forEach((button, index) => {
+        button.disabled = false;
+        button.classList.remove("correct", "incorrect");
+        button.textContent = String(answers[index]);
+        button.dataset.value = String(answers[index]);
+      });
+      feedback.textContent = "Choose an answer.";
+      feedback.className = "";
+      updateHud();
+    }
+
+    function chooseAnswer(button) {
+      if (!running || locked || button.disabled) return;
+      locked = true;
+      const chosenAnswer = Number(button.dataset.value);
+      const correct = chosenAnswer === correctAnswer;
+      const stage = getStage(questionNumber);
+      const scoring = currentQuestionType === "arithmetic" || currentQuestionType === "multiply" || currentQuestionType === "divide"
+        ? GAME_CONFIG.stages.find(item => item.id === currentQuestionType)
+        : stage;
+      const points = correct ? scoring.pointsCorrect : scoring.pointsWrong;
+      score += points;
+      streak = correct ? streak + 1 : 0;
+      button.classList.add(correct ? "correct" : "incorrect");
+      answerButtons.forEach(answerButton => { answerButton.disabled = true; });
+      feedback.textContent = correct ? `Correct! +${points}` : `Not quite. The answer was ${correctAnswer}. ${points} points.`;
+      feedback.className = correct ? "right" : "wrong";
+      updateHud();
+      nextQuestionTimer = setTimeout(() => {
+        locked = false;
+        if (secondsLeft > 0) renderQuestion();
+      }, GAME_CONFIG.feedbackDelayMs);
+    }
+
+    function endRound() {
+      if (!running) return;
+      running = false;
+      clearInterval(roundTimer);
+      clearTimeout(nextQuestionTimer);
+      answerButtons.forEach(button => { button.disabled = true; });
+      overlay.hidden = false;
+      document.getElementById("overlayKicker").textContent = "Time's up";
+      document.getElementById("overlayTitle").textContent = `Final score: ${score}`;
+      document.getElementById("overlayText").textContent = `You reached question ${questionNumber} with a best streak of ${streak}. Give it another round?`;
+      startButton.textContent = "Play again";
+      updateHud();
+    }
+
+    function startGame() {
+      clearInterval(roundTimer);
+      clearTimeout(nextQuestionTimer);
+      questionNumber = 0;
+      score = 0;
+      streak = 0;
+      secondsLeft = GAME_CONFIG.roundSeconds;
+      correctAnswer = null;
+      locked = false;
+      currentQuestionType = null;
+      running = true;
+      overlay.hidden = true;
+      answerButtons.forEach(button => {
+        button.disabled = false;
+        button.classList.remove("correct", "incorrect");
+        button.textContent = "";
+      });
+      renderQuestion();
+      roundTimer = setInterval(() => {
+        secondsLeft -= 1;
+        updateHud();
+        if (secondsLeft <= 0) endRound();
+      }, 1000);
+    }
+
+    answerButtons.forEach(button => button.addEventListener("click", () => chooseAnswer(button)));
+    startButton.addEventListener("click", startGame);
+  </script>
+</body>
+</html>
